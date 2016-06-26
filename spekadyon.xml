@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+
+<repositories version="1.0">
+	<repo priority="50" quality="experimental" status="unofficial">
+		<name>spekadyon</name>
+		<description>Spekadyon's personal overlay</description>
+		<homepage>https://github.com/Spekadyon/overlay</homepage>
+		<owner>
+			<email>geoffrey+git@spekadyon.org</email>
+		</owner>
+		<source type="git">https://github.com/Spekadyon/overlay.git</source>
+	</repo>
+</repositories>
