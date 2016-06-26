@@ -1,0 +1,146 @@
+diff --git a/gmic-1.7.3-org/src/Makefile b/gmic-1.7.3/src/Makefile
+index 73ce84a..70948e0 100644
+--- a/gmic-1.7.3-org/src/Makefile
++++ b/gmic-1.7.3/src/Makefile
+@@ -127,7 +127,6 @@ MANDATORY_LIBS = `pkg-config --libs zlib || echo -lz`
+ ifndef NO_SRIPDLIB
+ MANDATORY_CFLAGS += -std=c++11
+ endif
+-MANDATORY_LIBS += -L$(USR)/$(LIB)
+ ifeq ($(notdir $(CXX)),g++)
+ MANDATORY_CFLAGS += -Wall -Wextra
+ MANDATORY_LIBS += -lm
+@@ -174,8 +173,13 @@ endif
+ ABORT_CFLAGS = -Dcimg_use_abort
+ 
+ # Flags to enable parallelization of image processing algorithms, using OpenMP.
++ifndef NOOPENMP
+ OPENMP_CFLAGS = -fopenmp -Dcimg_use_openmp
+ OPENMP_LIBS = -lgomp
++else
++OPENMP_CFLAGS =
++OPENMP_LIBS =
++endif
+ 
+ # Flags to enable image display, using X11
+ # (keep /usr/ dirname here since X11 is located in /usr/ on Mac too).
+@@ -449,7 +453,7 @@ endif
+ libgmic.o: gmic.cpp gmic.h gmic_stdlib.h CImg.h
+ 	$(CXX) -o libgmic.o -c gmic.cpp $(PIC) $(CFLAGS)
+ libgmic: libgmic.o use_libgmic.cpp
+-	ar rcs libgmic.a libgmic.o
++	$(AR) rcs libgmic.a libgmic.o
+ ifeq ($(OS),Darwin)
+ 	$(CXX) -shared -o libgmic.so libgmic.o $(LIBS)
+ else
+@@ -461,7 +465,7 @@ libcgmic.o: gmic.cpp gmic.h gmic_stdlib.h CImg.h
+ 	$(CXX) -o libcgmic.o -c gmic_libc.cpp $(PIC) $(CFLAGS)
+ libcgmic: libcgmic.o libgmic.o
+ ifeq ($(OS),Darwin)
+-	ar rcs libcgmic.a libcgmic.o
++	$(AR) rcs libcgmic.a libcgmic.o
+ 	$(CXX) -shared -o libcgmic.so libcgmic.o libgmic.o $(LIBS)
+ else
+ ifeq ($(OS),Windows)
+@@ -476,7 +480,7 @@ libcgmicstatic.o: gmic.cpp gmic.h gmic_stdlib.h CImg.h
+ 	$(CXX) -o libcgmicstatic.o -c gmic_libc.cpp $(PIC) $(CFLAGS)
+ libcgmicstatic: libcgmicstatic.o libgmic.o
+ ifeq ($(OS),Darwin)
+-	ar rcs libcgmicstatic.a libcgmicstatic.o
++	$(AR) rcs libcgmicstatic.a libcgmicstatic.o
+ 	$(CXX) -shared -static -o libcgmicstatic.so libcgmicstatic.o libgmic.o $(PIC) $(CFLAGS) $(LIBS)
+ else
+ ifeq ($(OS),Windows)
+@@ -563,34 +567,37 @@ stdlib:
+ #\n\
+ */\n" > gmic_stdlib.h
+ 	@echo "#ifndef gmic_gimp" >> gmic_stdlib.h
+-	@\gmic gmic_stdlib.gmic raw:gmic_stdlib.gmic,char -compress_gmic 1 -a y -serialize char,1,0 -o -.h,uchar | sed 's/unsigned char/const unsigned char/' | sed 's/unnamed/gmic_stdlib/' >> gmic_stdlib.h
++	@./gmic gmic_stdlib.gmic raw:gmic_stdlib.gmic,char -compress_gmic 1 -a y -serialize char,1,0 -o -.h,uchar | sed 's/unsigned char/const unsigned char/' | sed 's/unnamed/gmic_stdlib/' >> gmic_stdlib.h
+ 	@echo "#else" >> gmic_stdlib.h
+-	@\gmic gmic_stdlib.gmic -update_server \$$_version,0 raw:$(HOME)/.config/gmic/gimp_update\$$_version.gmic,char 1 -a y -serialize char,1,0 -o -.h,uchar | sed 's/unsigned char/const unsigned char/' | sed 's/unnamed/gmic_stdlib/' >> gmic_stdlib.h
+-	@\gmic -v - ../html/img/logoGMIC.ppm -permute cxyz -serialize uchar,1,0 -o -.h,uchar | sed 's/unsigned char/const unsigned char/' | sed 's/unnamed/gmic_logo/' >> gmic_stdlib.h
++	@./gmic gmic_stdlib.gmic -update_server \$$_version,0 raw:$(HOME)/.config/gmic/gimp_update\$$_version.gmic,char 1 -a y -serialize char,1,0 -o -.h,uchar | sed 's/unsigned char/const unsigned char/' | sed 's/unnamed/gmic_stdlib/' >> gmic_stdlib.h
++	@./gmic -v - ../html/img/logoGMIC.ppm -permute cxyz -serialize uchar,1,0 -o -.h,uchar | sed 's/unsigned char/const unsigned char/' | sed 's/unnamed/gmic_logo/' >> gmic_stdlib.h
+ 	@echo "const unsigned long size_data_gmic_logo = (unsigned long)sizeof(data_gmic_logo);" >> gmic_stdlib.h
+ 	@echo "#endif" >> gmic_stdlib.h
+ 	@echo "const unsigned long size_data_gmic_stdlib = (unsigned long)sizeof(data_gmic_stdlib);" >> gmic_stdlib.h
+ 	@echo >>gmic_stdlib.h
+-	@\gmic -v - -_update_server_upload gmic_stdlib.h
++	@./gmic -v - -_update_server_upload gmic_stdlib.h
+ 
+ # Generate bash completion script (requires 'gmic' to be installed first).
+ bashcompletion:
+ 	@mkdir -p ../resources
+-	@\gmic -v - gmic_stdlib.gmic raw:gmic_stdlib.gmic,uchar -document_gmic bash 2> ../resources/gmic_bashcompletion.sh
++	@./gmic -v - gmic_stdlib.gmic raw:gmic_stdlib.gmic,uchar -document_gmic bash 2> ../resources/gmic_bashcompletion.sh
+ 
+ # Generate man page (requires 'gmic' to be installed).
+ man:
+ 	@mkdir -p ../man
+-	@\gmic -v - gmic_stdlib.gmic raw:gmic_stdlib.gmic,uchar -__help man 2> ../man/gmic.1
+-	@gzip -f ../man/gmic.1
++	@./gmic -v - gmic_stdlib.gmic raw:gmic_stdlib.gmic,uchar -__help man 2> ../man/gmic.1
+ 
+ # Install/uninstall/clean procedures.
+-install:
++install-gimp:
+ 	mkdir -p $(DESTDIR)$(PLUGINDIR)/
+ 	cp -f gmic_gimp $(DESTDIR)$(PLUGINDIR)/
+ 	cp -f ../resources/gmic_film_cluts.gmz $(DESTDIR)$(PLUGINDIR)/
++
++install-bin:
+ 	mkdir -p $(DESTDIR)$(USR)/$(BIN)/
+ 	cp -f gmic $(DESTDIR)$(USR)/$(BIN)/
++
++install-lib:
+ 	mkdir -p $(DESTDIR)$(USR)/$(INCLUDE)/
+ 	cp -f gmic.h $(DESTDIR)$(USR)/$(INCLUDE)/
+ 	cp -f gmic_libc.h $(DESTDIR)$(USR)/$(INCLUDE)/
+@@ -601,18 +608,31 @@ ifneq ($(OS),Darwin)
+ 	cp -f libgmic.so $(DESTDIR)$(USR)/$(LIB)/libgmic.so.1.7.3
+ 	ln -fs libgmic.so.1.7.3 $(DESTDIR)$(USR)/$(LIB)/libgmic.so.1
+ 	ln -fs libgmic.so.1 $(DESTDIR)$(USR)/$(LIB)/libgmic.so
++endif
++
++install-libc:
++	mkdir -p $(DESTDIR)$(USR)/$(INCLUDE)/
++	cp -f gmic.h $(DESTDIR)$(USR)/$(INCLUDE)/
++	cp -f gmic_libc.h $(DESTDIR)$(USR)/$(INCLUDE)/
++
++ifneq ($(OS),Darwin)
++	mkdir -p $(DESTDIR)$(USR)/share
++	mkdir -p $(DESTDIR)$(USR)/$(LIB)
+ 	cp -f libcgmic.so $(DESTDIR)$(USR)/$(LIB)/libcgmic.so.1.7.3
+ 	ln -fs libcgmic.so.1.7.3 $(DESTDIR)$(USR)/$(LIB)/libcgmic.so.1
+ 	ln -fs libcgmic.so.1 $(DESTDIR)$(USR)/$(LIB)/libcgmic.so
+-	cp -f ../zart/zart $(DESTDIR)$(USR)/$(BIN)/
+ endif
++
++install-man:
+ 	mkdir -p $(DESTDIR)$(USR)/share/man/
+ 	mkdir -p $(DESTDIR)$(USR)/share/man/man1/
+-	mkdir -p $(DESTDIR)$(USR)/share/man/fr/man1/
+-	cp -f ../man/gmic.1.gz $(DESTDIR)$(USR)/share/man/man1/gmic.1.gz
+-	cp -f ../man/gmic.1.gz $(DESTDIR)$(USR)/share/man/fr/man1/gmic.1.gz
++	cp -f ../man/gmic.1 $(DESTDIR)$(USR)/share/man/man1/gmic.1
++
++install-bash:
+ 	if [ -d /etc/bash_completion.d/ ]; then mkdir -p $(DESTDIR)/etc/bash_completion.d/; cp -f ../resources/gmic_bashcompletion.sh $(DESTDIR)/etc/bash_completion.d/gmic; fi
+-	if [ -d /opt/local/etc/bash_completion.d/ ]; then mkdir -p $(DESTDIR)/opt/local/etc/bash_completion.d/; cp -f ../resources/gmic_bashcompletion.sh $(DESTDIR)/opt/local/etc/bash_completion.d/gmic; fi
++
++install-zart:
++	cp -f ../zart/zart $(DESTDIR)$(USR)/$(BIN)/
+ 
+ uninstall:
+ 	rm -f $(DESTDIR)$(USR)/$(BIN)/gmic
+@@ -625,8 +645,7 @@ uninstall:
+ 	rm -f $(DESTDIR)$(USR)/$(LIB)/libcgmic.so.1
+ 	rm -f $(DESTDIR)$(USR)/$(LIB)/libcgmic$(SO)
+ 	rm -rf $(DESTDIR)$(USR)/share/doc/gmic/
+-	rm -f $(DESTDIR)$(USR)/share/man/man1/gmic.1.gz
+-	rm -f $(DESTDIR)$(USR)/share/man/fr/man1/gmic.1.gz
++	rm -f $(DESTDIR)$(USR)/share/man/man1/gmic.1
+ 
+ distclean: clean
+ 
