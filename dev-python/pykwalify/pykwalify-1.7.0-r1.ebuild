@@ -20,6 +20,7 @@ RDEPEND="
 	>=dev-python/docopt-0.6.2
 	>=dev-python/ruamel-yaml-0.11.0
 	>=dev-python/python-dateutil-2.4.2
+	>=dev-python/pyyaml-3.11
 "
 DEPEND="${RDEPEND}
 	dev-python/setuptools[${PYTHON_USEDEP}]
