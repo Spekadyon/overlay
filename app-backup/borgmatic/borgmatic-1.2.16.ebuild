@@ -1,4 +1,4 @@
-# Copyright 2018 Gentoo Authors
+# Copyright 2018-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -18,7 +18,9 @@ IUSE=""
 
 DEPEND="
 	>=dev-python/pykwalify-1.6.0
-	>dev-python/ruamel-yaml-0.15.0
+	<dev-python/pykwalify-14.06
+	=dev-python/ruamel-yaml-0.15*
+	!~dev-python/ruamel-yaml-0.15.0
 "
 RDEPEND="${DEPEND}
 	dev-python/setuptools[${PYTHON_USEDEP}]"
