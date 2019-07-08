@@ -22,6 +22,8 @@ DEPEND="
 	<dev-python/pykwalify-14.06
 	=dev-python/ruamel-yaml-0.15*
 	!~dev-python/ruamel-yaml-0.15.0
+	>=dev-python/colorama-0.4.1
+	<dev-python/colorama-0.5.0
 "
 RDEPEND="${DEPEND}"
 BDEPEND="dev-python/setuptools[${PYTHON_USEDEP}]"
