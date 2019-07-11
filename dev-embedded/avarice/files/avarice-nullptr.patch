@@ -1,0 +1,13 @@
+diff --git a/src/jtagrw.cc b/src/jtagrw.cc
+index dac200b..f47891e 100644
+--- a/src/jtagrw.cc
++++ b/src/jtagrw.cc
+@@ -131,7 +131,7 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
+ 	else
+ 	    numLocations = (numBytes + 1) / 2;
+ 	if (numLocations > 256)
+-	    return false;
++	    return NULL;
+ 
+ 	command[1] = whichSpace;
+ 	command[2] = numLocations - 1;
